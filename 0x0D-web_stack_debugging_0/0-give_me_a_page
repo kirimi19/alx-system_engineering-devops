@@ -1,11 +1,5 @@
 #!/usr/bin/env bash
-# 0-give_me_a_page
+# run apache on holbertonschool/265-0 container
 
-# Update first
-sudo apt-get -y update
-
-# Install Apache2
-sudo apt-get install -y apache2
-
-# Start the apache server
-sudo service apache2 start
+echo "ServerName localhost" >> /etc/apache2.conf
+service apache2 start
