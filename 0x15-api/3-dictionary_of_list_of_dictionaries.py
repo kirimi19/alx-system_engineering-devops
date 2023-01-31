@@ -1,33 +1,38 @@
 #!/usr/bin/python3
 """
-Using https://jsonplaceholder.typicode.com
-gathers data from API and exports it to JSON file
-Implemented using recursion
+Script that extends task 0-gather_data_from_an_API.py
+and exports data in JSON format as dicitonary list
 """
 import json
 import requests
 
 
-API = "https://jsonplaceholder.typicode.com"
-"""REST API url"""
+def all_to_json():
+    """return API data"""
+    USERS = []
+    userss = requests.get("http://jsonplaceholder.typicode.com/users")
+    for u in userss.json():
+        USERS.append((u.get('id'), u.get('username')))
+    TASK_STATUS_TITLE = []
+    todos = requests.get("http://jsonplaceholder.typicode.com/todos")
+    for t in todos.json():
+        TASK_STATUS_TITLE.append((t.get('userId'),
+                                  t.get('completed'),
+                                  t.get('title')))
+
+    """export to json"""
+    data = dict()
+    for u in USERS:
+        t = []
+        for task in TASK_STATUS_TITLE:
+            if task[0] == u[0]:
+                t.append({"task": task[2], "completed": task[1],
+                          "username": u[1]})
+        data[str(u[0])] = t
+    filename = "todo_all_employees.json"
+    with open(filename, "w") as f:
+        json.dump(data, f, sort_keys=True)
 
 
-if __name__ == '__main__':
-    users_res = requests.get('{}/users'.format(API)).json()
-    todos_res = requests.get('{}/todos'.format(API)).json()
-    users_data = {}
-    for user in users_res:
-        id = user.get('id')
-        user_name = user.get('username')
-        todos = list(filter(lambda x: x.get('userId') == id, todos_res))
-        user_data = list(map(
-            lambda x: {
-                'username': user_name,
-                'task': x.get('title'),
-                'completed': x.get('completed')
-            },
-            todos
-        ))
-        users_data['{}'.format(id)] = user_data
-    with open('todo_all_employees.json', 'w') as file:
-        json.dump(users_data, file)
+if __name__ == "__main__":
+    all_to_json()

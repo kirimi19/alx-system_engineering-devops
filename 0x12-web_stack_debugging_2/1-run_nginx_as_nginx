@@ -1,7 +1,21 @@
 #!/usr/bin/env bash
-# fix container:: task 2
-pkill -f apache2
-chmod 644 /etc/nginx/nginx.conf
-sed -i "1i user nginx;" /etc/nginx/nginx.conf
-sed -i 's/80/8080/' /etc/nginx/sites-enabled/default
-sudo -u nginx service nginx restart
+# script that configures Nginx to use only nginx user, not root
+
+# create nginx user if it doesn't exist
+sudo sed -i 's/#user www-data;/user nginx;/' /etc/nginx/nginx.conf
+
+# stop current nginx proces, if it's running
+sudo service nginx stop
+
+# change ownership and permission of config file
+chmod 700 /etc/nginx/nginx.conf
+chown nginx:nginx /etc/nginx/nginx.conf
+
+# Edit nginx config to listen on all IPs on port 8080
+sudo sed -i 's/80 default_server/8080 default_server/' /etc/nginx/sites-enabled/default
+
+# netstat -lpn shows apache2 is using 8080
+pkill apache2
+
+# start nginx process as nginx user
+sudo service nginx start

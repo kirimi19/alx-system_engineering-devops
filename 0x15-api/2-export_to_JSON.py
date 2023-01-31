@@ -1,37 +1,40 @@
 #!/usr/bin/python3
 """
-Using https://jsonplaceholder.typicode.com
-gathers data from API and exports it to JSON file
-Implemented using recursion
+Script that export 0-gather_data_from_an_API.py
+It exports the data in JSON format
 """
 import json
-import re
-import requests
 import sys
+import urllib.request
 
 
-API = "https://jsonplaceholder.typicode.com"
-"""REST API url"""
+def export_to_json(employee_id):
+    """Make API request to get information"""
+    url = ("https://jsonplaceholder.typicode.com/todos?userId={}"
+           .format(employee_id))
+    response = urllib.request.urlopen(url)
+    data = json.loads(response.read())
+
+    """Make API request to get employee name"""
+    url = "https://jsonplaceholder.typicode.com/users/{}".format(employee_id)
+    response = urllib.request.urlopen(url)
+    employee_data = json.loads(response.read())
+    employee_name = employee_data["name"]
+
+    """create dicitonary to store information"""
+    task_data = {}
+    task_list = []
+    for task in data:
+        task_info = {"task": task["title"], "completed": task["completed"],
+                     "username": employee_name}
+        task_list.append(task_info)
+    task_data[str(employee_id)] = task_list
+
+    """write the information to JSON file"""
+    with open("{}.json".format(employee_id), "w") as json_file:
+        json.dump(task_data, json_file)
 
 
-if __name__ == '__main__':
-    if len(sys.argv) > 1:
-        if re.fullmatch(r'\d+', sys.argv[1]):
-            id = int(sys.argv[1])
-            user_res = requests.get('{}/users/{}'.format(API, id)).json()
-            todos_res = requests.get('{}/todos'.format(API)).json()
-            user_name = user_res.get('username')
-            todos = list(filter(lambda x: x.get('userId') == id, todos_res))
-            with open("{}.json".format(id), 'w') as json_file:
-                user_data = list(map(
-                    lambda x: {
-                        "task": x.get("title"),
-                        "completed": x.get("completed"),
-                        "username": user_name
-                    },
-                    todos
-                ))
-                user_data = {
-                    "{}".format(id): user_data
-                }
-                json.dump(user_data, json_file)
+if __name__ == "__main__":
+    employee_id = int(sys.argv[1])
+    export_to_json(employee_id)

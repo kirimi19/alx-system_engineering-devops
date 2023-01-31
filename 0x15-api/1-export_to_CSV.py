@@ -1,33 +1,38 @@
 #!/usr/bin/python3
 """
-Using https://jsonplaceholder.typicode.com
-gathers data from API and exports it to CSV file
-Implemented using recursion
+Script from 0-gather_data_from_an_API.py, that
+exports data in csv format
 """
-import re
-import requests
+import csv
+import json
 import sys
+import urllib.request
 
 
-API = "https://jsonplaceholder.typicode.com"
-"""REST API url"""
+def export_to_csv(employee_id):
+    """Make request for todolist"""
+    url = ("https://jsonplaceholder.typicode.com/todos?userId={}"
+           .format(employee_id))
+    response = urllib.request.urlopen(url)
+    data = json.loads(response.read())
+
+    """Mae API request for employee name"""
+    url = "https://jsonplaceholder.typicode.com/users/{}".format(employee_id)
+    response = urllib.request.urlopen(url)
+    employee_data = json.loads(response.read())
+    employee_name = employee_data["name"]
+
+    """create csv and write to it"""
+    csv_file = ("{}.csv".format(employee_id))
+    with open(csv_file, "w") as f:
+        writer = csv.writer(f)
+        writer.writerow(["USER_ID", "USERNAME", "TASK_COMPLETED_STATUS",
+                        "TASK_TITLE"])
+        for task in data:
+            writer.writerow([employee_id, employee_name, task["completed"],
+                             task["title"]])
 
 
-if __name__ == '__main__':
-    if len(sys.argv) > 1:
-        if re.fullmatch(r'\d+', sys.argv[1]):
-            id = int(sys.argv[1])
-            user_res = requests.get('{}/users/{}'.format(API, id)).json()
-            todos_res = requests.get('{}/todos'.format(API)).json()
-            user_name = user_res.get('username')
-            todos = list(filter(lambda x: x.get('userId') == id, todos_res))
-            with open('{}.csv'.format(id), 'w') as file:
-                for todo in todos:
-                    file.write(
-                        '"{}","{}","{}","{}"\n'.format(
-                            id,
-                            user_name,
-                            todo.get('completed'),
-                            todo.get('title')
-                        )
-                    )
+if __name__ == "__main__":
+    employee_id = int(sys.argv[1])
+    export_to_csv(employee_id)

@@ -1,33 +1,33 @@
 #!/usr/bin/python3
 """
-Using https://jsonplaceholder.typicode.com
-returns info about employee TODO progress
-Implemented using recursion
+Script, using REST API, that gives TODO list progress
+rusing given eomplyee ID
 """
-import re
-import requests
-import sys
+import json
+import urllib.request
 
 
-API = "https://jsonplaceholder.typicode.com"
-"""REST API url"""
-
-
-if __name__ == '__main__':
-    if len(sys.argv) > 1:
-        if re.fullmatch(r'\d+', sys.argv[1]):
-            id = int(sys.argv[1])
-            user_res = requests.get('{}/users/{}'.format(API, id)).json()
-            todos_res = requests.get('{}/todos'.format(API)).json()
-            user_name = user_res.get('name')
-            todos = list(filter(lambda x: x.get('userId') == id, todos_res))
-            todos_done = list(filter(lambda x: x.get('completed'), todos))
-            print(
-                'Employee {} is done with tasks({}/{}):'.format(
-                    user_name,
-                    len(todos_done),
-                    len(todos)
-                )
-            )
-            for todo_done in todos_done:
-                print('\t {}'.format(todo_done.get('title')))
+def todo_list_progress(employee_id):
+    """Make API request"""
+    url = ("https://jsonplaceholder.typicode.com/todos?userId={}"
+           .format(employee_id))
+    response = urllib.request.urlopen(url)
+    data = json.loads(response.read())
+    """get to filter complete tasks"""
+    complete_tasks = [tasks for tasks in data if tasks["completed"]]
+    num_done_tasks = len(complete_tasks)
+    num_total_tasks = len(data)
+    """Getting employee name"""
+    url = "https://jsonplaceholder.typicode.com/users/{}".format(employee_id)
+    response = urllib.request.urlopen(url)
+    employee_data = json.loads(response.read())
+    employee_name = employee_data["name"]
+    """printing the output in a specific format"""
+    print("Employee {} is done with tasks({}/{}):".format(employee_name,
+                                                          num_done_tasks,
+                                                          num_total_tasks))
+    for task in complete_tasks:
+        print("\t{}['title']".format(task))
+if __name__ == "__main__":
+    employee_id = 2
+    todo_list_progress(employee_id)
