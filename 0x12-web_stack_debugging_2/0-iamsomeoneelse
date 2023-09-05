@@ -1,6 +1,0 @@
-#!/usr/bin/env bash
-# script that runs the whoami command
-if [ "$1" ]
-    then
-sudo -u "$1" whoami
-fi
